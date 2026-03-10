@@ -1,470 +1,434 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <meta name="theme-color" content="#0D0D1A" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Tensión" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <meta name="theme-color" content="#0D0D1A"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-title" content="Tension"/>
   <title>Monitor Cardiovascular</title>
-
-  <!-- PWA Manifest embebido -->
-  <script>
-    const manifest = {
-      name: "Monitor Cardiovascular",
-      short_name: "Tensión",
-      start_url: ".",
-      display: "standalone",
-      background_color: "#0D0D1A",
-      theme_color: "#0D0D1A",
-      description: "Seguimiento de tensión arterial y pulso",
-      icons: [{
-        src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230D0D1A'/><text y='.9em' font-size='80'>🫀</text></svg>",
-        sizes: "any", type: "image/svg+xml"
-      }]
-    };
-    const blob = new Blob([JSON.stringify(manifest)], {type: "application/json"});
-    const link = document.createElement("link");
-    link.rel = "manifest";
-    link.href = URL.createObjectURL(blob);
-    document.head.appendChild(link);
-  </script>
-
-  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-
-  <!-- React + Babel -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-
-  <!-- Recharts -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.8.0/Recharts.min.js"></script>
-
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; background: #0D0D1A; }
-    body { font-family: 'DM Sans', sans-serif; color: #E8E8FF; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%;background:#0D0D1A}
+    body{font-family:'DM Sans',sans-serif;color:#E8E8FF;-webkit-font-smoothing:antialiased}
     input[type=number]::-webkit-outer-spin-button,
-    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
-    input[type=number] { -moz-appearance: textfield; }
-    input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(0.5); }
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-track { background: #0D0D1A; }
-    ::-webkit-scrollbar-thumb { background: #2D2D4E; border-radius: 2px; }
-
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-    @keyframes savedPop { 0% { opacity:0; transform:scale(0.8); } 30% { opacity:1; transform:scale(1.05); } 100% { opacity:1; transform:scale(1); } }
-
-    .fade-in { animation: fadeIn 0.3s ease forwards; }
-    .heart-pulse { animation: pulse 1.2s ease-in-out infinite; }
-    .saved-badge { animation: savedPop 0.3s ease forwards; }
-
-    .tab-btn { transition: all 0.2s ease; }
-    .tab-btn:active { transform: scale(0.95); }
-    .add-btn { transition: all 0.15s ease; }
-    .add-btn:active { transform: scale(0.97); opacity: 0.9; }
-    .delete-btn:active { transform: scale(0.9); }
+    input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+    input[type=number]{-moz-appearance:textfield}
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator{filter:invert(0.5)}
+    ::-webkit-scrollbar{width:4px}
+    ::-webkit-scrollbar-track{background:#0D0D1A}
+    ::-webkit-scrollbar-thumb{background:#2D2D4E;border-radius:2px}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes heartbeat{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+    @keyframes pop{0%{opacity:0;transform:scale(0.8)}60%{transform:scale(1.05)}100%{opacity:1;transform:scale(1)}}
+    .fade{animation:fadeUp 0.28s ease forwards}
+    .beat{animation:heartbeat 1.4s ease-in-out infinite;display:inline-block}
+    .pop{animation:pop 0.25s ease forwards}
+    button{font-family:'DM Sans',sans-serif}
   </style>
 </head>
 <body>
-  <div id="root"></div>
+<div id="root"></div>
+<script type="text/babel">
+const {useState, useEffect, useCallback} = React;
+const KEY = "tension-v3";
+const MO = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
-  <script type="text/babel">
-    const { useState, useEffect, useCallback, useRef } = React;
-    const {
-      ComposedChart, LineChart, Line, XAxis, YAxis, CartesianGrid,
-      Tooltip, Legend, ReferenceLine, ResponsiveContainer
-    } = Recharts;
+function fmtFull(iso) {
+  const d = new Date(iso);
+  return d.getDate()+" "+MO[d.getMonth()]+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+}
+function fmtShort(iso) {
+  const d = new Date(iso);
+  return d.getDate()+" "+MO[d.getMonth()];
+}
+function nowLocal() {
+  const d = new Date();
+  return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+}
+function avg(a, k) { return a.length ? (a.reduce((s,r)=>s+r[k],0)/a.length).toFixed(1) : "0"; }
+function mx(a, k)  { return a.length ? Math.max(...a.map(r=>r[k])) : 0; }
+function mn(a, k)  { return a.length ? Math.min(...a.map(r=>r[k])) : 0; }
 
-    const STORAGE_KEY = "tension-arterial-v2";
-    const MONTHS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+function getStatus(s, d) {
+  if (s>=140||d>=90) return {label:"Hipertension", color:"#FF6B6B", bg:"rgba(255,107,107,0.09)"};
+  if (s>=130||d>=80) return {label:"Elevada",      color:"#FF9F43", bg:"rgba(255,159,67,0.09)"};
+  if (s>=120)        return {label:"Normal-alta",  color:"#FFC048", bg:"rgba(255,192,72,0.09)"};
+  return                    {label:"Normal",       color:"#51CF66", bg:"rgba(81,207,102,0.09)"};
+}
 
-    function fmtDate(iso) {
-      const d = new Date(iso);
-      return `${d.getDate()} ${MONTHS[d.getMonth()]} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
-    }
-    function fmtShort(iso) {
-      const d = new Date(iso);
-      return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
-    }
-    function nowLocal() {
-      const d = new Date();
-      return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,16);
-    }
-    function mean(arr, k) { return arr.length ? (arr.reduce((s,r)=>s+r[k],0)/arr.length).toFixed(1) : "—"; }
-    function max(arr, k)  { return arr.length ? Math.max(...arr.map(r=>r[k])) : "—"; }
-    function min(arr, k)  { return arr.length ? Math.min(...arr.map(r=>r[k])) : "—"; }
+function SvgChart({records}) {
+  const W=340, H=210, PL=34, PR=10, PT=10, PB=26;
+  const IW=W-PL-PR, IH=H-PT-PB;
+  const YMIN=40, YMAX=185;
+  const n = records.length;
+  if (n < 2) return null;
 
-    function getStatus(s, d) {
-      if (s >= 140 || d >= 90) return { label:"Hipertensión",  color:"#FF6B6B", bg:"rgba(255,107,107,0.08)" };
-      if (s >= 130 || d >= 80) return { label:"Elevada",       color:"#FF9F43", bg:"rgba(255,159,67,0.08)"  };
-      if (s >= 120)            return { label:"Normal-alta",   color:"#FFC048", bg:"rgba(255,192,72,0.08)"  };
-      return                          { label:"Normal",        color:"#51CF66", bg:"rgba(81,207,102,0.08)"  };
-    }
+  const px = i => PL + i*(IW/(n-1));
+  const py = v => PT + IH - (v-YMIN)/(YMAX-YMIN)*IH;
 
-    const CustomTooltip = ({ active, payload, label }) => {
-      if (!active || !payload?.length) return null;
-      return (
-        <div style={{background:"#1A1A38",border:"1px solid #3D3D6E",borderRadius:10,padding:"10px 14px",fontSize:12,color:"#E8E8FF",boxShadow:"0 8px 32px rgba(0,0,0,0.5)"}}>
-          <p style={{color:"#7777AA",marginBottom:6,fontSize:11}}>{label}</p>
-          {payload.map((p,i) => (
-            <p key={i} style={{color:p.color,margin:"2px 0",fontWeight:600}}>
-              {p.name}: {p.value} <span style={{fontWeight:400,opacity:0.7}}>{p.name==="Pulso"?"ppm":"mmHg"}</span>
-            </p>
-          ))}
-        </div>
-      );
-    };
+  function linePath(key) {
+    return records.map((r,i) => (i===0?"M":"L")+px(i).toFixed(1)+","+py(r[key]).toFixed(1)).join(" ");
+  }
 
-    function StatCard({ label, color, emoji, unit, data, k }) {
-      return (
-        <div style={{background:"#12122A",borderRadius:14,padding:16,border:`1px solid ${color}22`,marginBottom:12}} className="fade-in">
-          <div style={{fontSize:13,color,fontWeight:700,marginBottom:12,display:"flex",alignItems:"center",gap:6}}>
-            <span>{emoji}</span> {label} <span style={{color:"#4444AA",fontWeight:400,fontSize:11}}>({unit})</span>
+  const yTicks = [60,80,90,100,120,130,140,160];
+  const xStep = n<=8 ? 1 : Math.ceil(n/6);
+
+  return (
+    <svg viewBox={"0 0 "+W+" "+H} style={{width:"100%",height:"auto",display:"block"}}>
+      {yTicks.map(v => (
+        <line key={v} x1={PL} x2={W-PR} y1={py(v)} y2={py(v)} stroke="#2A2A4A" strokeWidth="0.7" strokeDasharray="3 3"/>
+      ))}
+      {[140,90].map(v => (
+        <line key={v} x1={PL} x2={W-PR} y1={py(v)} y2={py(v)} stroke="#FF6B6B" strokeWidth="1" strokeDasharray="5 4" strokeOpacity="0.5"/>
+      ))}
+      {[120,80].map(v => (
+        <line key={v} x1={PL} x2={W-PR} y1={py(v)} y2={py(v)} stroke="#51CF66" strokeWidth="0.8" strokeDasharray="3 6" strokeOpacity="0.3"/>
+      ))}
+      <path d={linePath("s")} fill="none" stroke="#FF9999" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d={linePath("d")} fill="none" stroke="#99CCFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d={linePath("p")} fill="none" stroke="#82C91E" strokeWidth="1.5" strokeDasharray="6 3" strokeLinecap="round" strokeLinejoin="round"/>
+      {records.map((r,i) => (
+        <circle key={"s"+i} cx={px(i)} cy={py(r.s)} r="4" fill="#FF9999" stroke="#0D0D1A" strokeWidth="1.5"/>
+      ))}
+      {records.map((r,i) => (
+        <circle key={"d"+i} cx={px(i)} cy={py(r.d)} r="4" fill="#99CCFF" stroke="#0D0D1A" strokeWidth="1.5"/>
+      ))}
+      {records.map((r,i) => (
+        <polygon key={"p"+i}
+          points={px(i)+","+(py(r.p)-5)+" "+(px(i)-4)+","+(py(r.p)+3)+" "+(px(i)+4)+","+(py(r.p)+3)}
+          fill="#82C91E" stroke="#0D0D1A" strokeWidth="1.5"/>
+      ))}
+      {yTicks.map(v => (
+        <text key={v} x={PL-4} y={py(v)+3.5} textAnchor="end" fontSize="8" fill="#4A4A7A">{v}</text>
+      ))}
+      {records.map((r,i) => i%xStep===0 && (
+        <text key={i} x={px(i)} y={H-4} textAnchor="middle" fontSize="8" fill="#4A4A7A">{fmtShort(r.fecha)}</text>
+      ))}
+    </svg>
+  );
+}
+
+function App() {
+  const [recs, setRecs]       = useState([]);
+  const [tab, setTab]         = useState("grafica");
+  const [form, setForm]       = useState({s:"", d:"", p:"", fecha:nowLocal()});
+  const [saved, setSaved]     = useState(false);
+  const [del, setDel]         = useState(null);
+  const [err, setErr]         = useState("");
+
+  useEffect(() => {
+    try { const r=localStorage.getItem(KEY); if(r) setRecs(JSON.parse(r)); } catch(e) {}
+  }, []);
+
+  const persist = useCallback((data) => {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(data));
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch(e) {}
+  }, []);
+
+  function addRecord() {
+    const s=parseInt(form.s), d=parseInt(form.d), p=parseInt(form.p);
+    if (isNaN(s)||isNaN(d)||isNaN(p)) { setErr("Rellena los tres campos."); return; }
+    if (s<50||s>250||d<30||d>180||p<30||p>220) { setErr("Valores fuera de rango."); return; }
+    setErr("");
+    const updated = [...recs, {id:Date.now(), fecha:form.fecha, s, d, p}]
+      .sort((a,b) => new Date(a.fecha)-new Date(b.fecha));
+    setRecs(updated);
+    persist(updated);
+    setForm(f => ({...f, s:"", d:"", p:""}));
+    setTab("grafica");
+  }
+
+  function deleteRec(id) {
+    const u = recs.filter(r => r.id!==id);
+    setRecs(u); persist(u); setDel(null);
+  }
+
+  const last = recs[recs.length-1];
+  const st   = last ? getStatus(last.s, last.d) : null;
+
+  const TABS = [
+    ["grafica","📈","Grafica"],
+    ["anadir","＋","Anadir"],
+    ["historial","☰","Historial"],
+    ["stats","◎","Stats"]
+  ];
+
+  return (
+    <div style={{background:"#0D0D1A",minHeight:"100dvh",maxWidth:480,margin:"0 auto",display:"flex",flexDirection:"column"}}>
+
+      {/* ── HEADER ── */}
+      <div style={{background:"linear-gradient(160deg,#1A1A3E,#0D0D2B)",padding:"18px 18px 14px",borderBottom:"1px solid #1E1E3A",position:"sticky",top:0,zIndex:200}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <span className="beat" style={{fontSize:26}}>🫀</span>
+          <div style={{flex:1}}>
+            <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:18,fontWeight:400,color:"#E8E8FF",margin:0}}>
+              Monitor Cardiovascular
+            </h1>
+            <div style={{fontSize:11,color:"#5555AA",marginTop:1,display:"flex",gap:6,alignItems:"center"}}>
+              {recs.length} registro{recs.length!==1?"s":""} guardado{recs.length!==1?"s":""}
+              {saved && <span className="pop" style={{color:"#51CF66",fontWeight:700}}>✓ Guardado</span>}
+            </div>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
-            {[["Media",mean(data,k)],["Máx.",max(data,k)],["Mín.",min(data,k)]].map(([lbl,val])=>(
-              <div key={lbl} style={{textAlign:"center",background:"#0D0D1A",borderRadius:10,padding:"10px 6px"}}>
-                <div style={{fontSize:22,fontWeight:700,color,fontFamily:"'DM Serif Display',serif"}}>{val}</div>
-                <div style={{fontSize:10,color:"#6666AA",marginTop:3}}>{lbl}</div>
+        </div>
+        {last && st && (
+          <div className="fade" style={{marginTop:12,background:st.bg,border:"1px solid "+st.color+"33",borderRadius:12,padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+            <div>
+              <div style={{fontSize:10,color:"#6666AA",textTransform:"uppercase",letterSpacing:.9,marginBottom:3}}>
+                Ultima · {fmtFull(last.fecha)}
               </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-
-    function App() {
-      const [records, setRecords]     = useState([]);
-      const [tab, setTab]             = useState("grafica");
-      const [form, setForm]           = useState({ s:"", d:"", p:"", fecha: nowLocal() });
-      const [saved, setSaved]         = useState(false);
-      const [delConfirm, setDelConfirm] = useState(null);
-      const [error, setError]         = useState("");
-
-      // Cargar datos
-      useEffect(() => {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (raw) setRecords(JSON.parse(raw));
-        } catch(e) {}
-      }, []);
-
-      const persist = useCallback((data) => {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-          setSaved(true);
-          setTimeout(() => setSaved(false), 2200);
-        } catch(e) {}
-      }, []);
-
-      const handleAdd = () => {
-        const s = parseInt(form.s), d = parseInt(form.d), p = parseInt(form.p);
-        if (isNaN(s)||isNaN(d)||isNaN(p)) { setError("Rellena los tres campos."); return; }
-        if (s<50||s>250||d<30||d>180||p<30||p>220) { setError("Valores fuera de rango."); return; }
-        setError("");
-        const entry = { id: Date.now(), fecha: form.fecha, s, d, p };
-        const updated = [...records, entry].sort((a,b) => new Date(a.fecha)-new Date(b.fecha));
-        setRecords(updated);
-        persist(updated);
-        setForm(f => ({...f, s:"", d:"", p:""}));
-        setTab("grafica");
-      };
-
-      const handleDelete = (id) => {
-        const updated = records.filter(r => r.id !== id);
-        setRecords(updated);
-        persist(updated);
-        setDelConfirm(null);
-      };
-
-      const chartData = records.map(r => ({
-        name: fmtShort(r.fecha),
-        full: fmtDate(r.fecha),
-        Sistólica: r.s,
-        Diastólica: r.d,
-        Pulso: r.p,
-      }));
-
-      const last = records[records.length - 1];
-      const status = last ? getStatus(last.s, last.d) : null;
-
-      const tabs = [
-        { id:"grafica",   icon:"📈", label:"Gráfica"      },
-        { id:"anadir",    icon:"＋",  label:"Añadir"       },
-        { id:"historial", icon:"☰",  label:"Historial"    },
-        { id:"stats",     icon:"◎",  label:"Estadísticas" },
-      ];
-
-      return (
-        <div style={{background:"#0D0D1A",minHeight:"100dvh",maxWidth:500,margin:"0 auto",display:"flex",flexDirection:"column"}}>
-
-          {/* ── CABECERA ── */}
-          <div style={{background:"linear-gradient(160deg,#1A1A3E 0%,#0D0D2B 100%)",padding:"20px 18px 14px",borderBottom:"1px solid #2A2A4A",position:"sticky",top:0,zIndex:200}}>
-            <div style={{display:"flex",alignItems:"center",gap:12}}>
-              <span style={{fontSize:28}} className="heart-pulse">🫀</span>
-              <div style={{flex:1}}>
-                <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:19,fontWeight:400,letterSpacing:"-0.2px",color:"#E8E8FF",margin:0}}>
-                  Monitor Cardiovascular
-                </h1>
-                <div style={{fontSize:11,color:"#5555AA",marginTop:1,display:"flex",alignItems:"center",gap:6}}>
-                  {records.length} registro{records.length!==1?"s":""} guardado{records.length!==1?"s":""}
-                  {saved && <span className="saved-badge" style={{color:"#51CF66",fontWeight:600}}>✓ Guardado</span>}
-                </div>
+              <div style={{display:"flex",alignItems:"baseline",gap:5}}>
+                <span style={{fontFamily:"'DM Serif Display',serif",fontSize:26,color:"#FF9999"}}>{last.s}</span>
+                <span style={{color:"#2A2A5A",fontSize:18}}>/</span>
+                <span style={{fontFamily:"'DM Serif Display',serif",fontSize:26,color:"#99CCFF"}}>{last.d}</span>
+                <span style={{fontSize:11,color:"#5A5A8A"}}>mmHg</span>
+                <span style={{fontSize:14,color:"#82C91E",marginLeft:4}}>♥ {last.p} ppm</span>
               </div>
             </div>
+            <div style={{background:st.color+"18",border:"1px solid "+st.color+"44",borderRadius:8,padding:"5px 10px",fontSize:11,color:st.color,fontWeight:700}}>
+              {st.label}
+            </div>
+          </div>
+        )}
+      </div>
 
-            {/* Última lectura */}
-            {last && status && (
-              <div style={{marginTop:14,background:status.bg,border:`1px solid ${status.color}33`,borderRadius:12,padding:"10px 14px",display:"flex",alignItems:"center",justifyContent:"space-between"}} className="fade-in">
-                <div>
-                  <div style={{fontSize:10,color:"#7777AA",textTransform:"uppercase",letterSpacing:1,marginBottom:3}}>Última lectura · {fmtDate(last.fecha)}</div>
-                  <div style={{display:"flex",alignItems:"baseline",gap:6}}>
-                    <span style={{fontSize:26,fontWeight:700,color:"#FF9999",fontFamily:"'DM Serif Display',serif"}}>{last.s}</span>
-                    <span style={{color:"#3A3A6A",fontSize:18}}>/</span>
-                    <span style={{fontSize:26,fontWeight:700,color:"#99CCFF",fontFamily:"'DM Serif Display',serif"}}>{last.d}</span>
-                    <span style={{fontSize:12,color:"#6666AA"}}>mmHg</span>
-                    <span style={{fontSize:15,color:"#82C91E",marginLeft:4}}>♥ {last.p} ppm</span>
+      {/* ── CONTENIDO ── */}
+      <div style={{flex:1,padding:"18px 16px",overflowY:"auto"}}>
+
+        {/* GRAFICA */}
+        {tab==="grafica" && (
+          <div className="fade">
+            <div style={{fontSize:11,color:"#5555AA",textTransform:"uppercase",letterSpacing:1.5,marginBottom:14}}>
+              Evolucion temporal
+            </div>
+            {recs.length < 2 ? (
+              <div style={{textAlign:"center",padding:"60px 20px",color:"#4A4A7A"}}>
+                <div style={{fontSize:48,marginBottom:14}}>📉</div>
+                <p style={{fontSize:14,lineHeight:1.6,marginBottom:18}}>
+                  Anade al menos <strong style={{color:"#A78BFA"}}>2 registros</strong> para ver la grafica
+                </p>
+                <button onClick={()=>setTab("anadir")} style={{background:"rgba(167,139,250,0.12)",border:"1px solid #A78BFA55",color:"#A78BFA",padding:"11px 22px",borderRadius:12,cursor:"pointer",fontSize:14,fontWeight:600}}>
+                  Anadir primer registro
+                </button>
+              </div>
+            ) : (
+              <>
+                <div style={{background:"#10102A",borderRadius:16,padding:"14px 8px 10px",border:"1px solid #2A2A4A",marginBottom:12}}>
+                  <SvgChart records={recs}/>
+                </div>
+                <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:6,paddingLeft:2}}>
+                  {[["#FF9999","Sistolica",false],["#99CCFF","Diastolica",false],["#82C91E","Pulso",true]].map(([c,l,dash])=>(
+                    <div key={l} style={{display:"flex",alignItems:"center",gap:5,fontSize:11,color:"#6666AA"}}>
+                      <svg width="20" height="8">
+                        <line x1="0" y1="4" x2="20" y2="4" stroke={c} strokeWidth="2" strokeDasharray={dash?"5 3":undefined}/>
+                      </svg>
+                      {l}
+                    </div>
+                  ))}
+                </div>
+                <div style={{display:"flex",gap:12,flexWrap:"wrap",paddingLeft:2}}>
+                  {[["#FF6B6B","HTA (140/90)"],["#51CF66","Normal (120/80)"]].map(([c,l])=>(
+                    <div key={l} style={{display:"flex",alignItems:"center",gap:5,fontSize:10,color:"#4A4A6A"}}>
+                      <svg width="18" height="6">
+                        <line x1="0" y1="3" x2="18" y2="3" stroke={c} strokeWidth="1.2" strokeDasharray="4 3" strokeOpacity="0.7"/>
+                      </svg>
+                      {l}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ANADIR */}
+        {tab==="anadir" && (
+          <div className="fade">
+            <div style={{fontSize:11,color:"#5555AA",textTransform:"uppercase",letterSpacing:1.5,marginBottom:18}}>
+              Nuevo registro
+            </div>
+            <div style={{background:"#10102A",borderRadius:16,padding:"20px 18px",border:"1px solid #2A2A4A"}}>
+              <div style={{marginBottom:18}}>
+                <label style={{fontSize:11,color:"#6666AA",display:"block",marginBottom:7,letterSpacing:.8}}>FECHA Y HORA</label>
+                <input type="datetime-local" value={form.fecha}
+                  onChange={e=>setForm(f=>({...f,fecha:e.target.value}))}
+                  style={{width:"100%",background:"#1A1A38",border:"1px solid #3A3A6A",borderRadius:10,padding:"12px 14px",color:"#E8E8FF",fontSize:14,outline:"none",fontFamily:"'DM Sans',sans-serif"}}/>
+              </div>
+
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:14}}>
+                {[
+                  {k:"s", label:"Sistolica",  unit:"mmHg", color:"#FF9999", icon:"▲", ph:"120"},
+                  {k:"d", label:"Diastolica", unit:"mmHg", color:"#99CCFF", icon:"▼", ph:"80"},
+                  {k:"p", label:"Pulso",      unit:"ppm",  color:"#82C91E", icon:"♥", ph:"70"}
+                ].map(({k,label,unit,color,icon,ph}) => (
+                  <div key={k}>
+                    <label style={{fontSize:10,color:"#5A5A8A",display:"block",textAlign:"center",marginBottom:5}}>
+                      <span style={{color}}>{icon}</span> {label}
+                    </label>
+                    <input type="number" inputMode="numeric" placeholder={ph} value={form[k]}
+                      onChange={e=>setForm(f=>({...f,[k]:e.target.value}))}
+                      style={{width:"100%",background:"#0D0D1A",border:"2px solid "+(form[k] ? color+"66" : "#2A2A4A"),borderRadius:12,padding:"13px 4px",color,fontSize:26,textAlign:"center",fontFamily:"'DM Serif Display',serif",outline:"none",transition:"border-color .2s"}}/>
+                    <p style={{fontSize:9,color:"#3A3A6A",textAlign:"center",margin:"4px 0 0"}}>{unit}</p>
                   </div>
-                </div>
-                <div style={{background:`${status.color}18`,border:`1px solid ${status.color}55`,borderRadius:8,padding:"5px 10px",fontSize:11,color:status.color,fontWeight:700,textAlign:"center",whiteSpace:"nowrap"}}>
-                  {status.label}
-                </div>
+                ))}
+              </div>
+
+              {form.s && form.d && !isNaN(parseInt(form.s)) && !isNaN(parseInt(form.d)) && (() => {
+                const s2 = getStatus(parseInt(form.s), parseInt(form.d));
+                return (
+                  <div style={{background:s2.bg,border:"1px solid "+s2.color+"44",borderRadius:8,padding:"7px 12px",marginBottom:12,textAlign:"center",fontSize:12,color:s2.color}}>
+                    Estado estimado: <strong>{s2.label}</strong>
+                  </div>
+                );
+              })()}
+
+              {err && <p style={{color:"#FF6B6B",fontSize:12,textAlign:"center",marginBottom:10}}>{err}</p>}
+
+              <button onClick={addRecord} style={{width:"100%",padding:15,background:"linear-gradient(135deg,#7C3AED,#A78BFA)",border:"none",borderRadius:13,color:"#fff",fontSize:15,fontWeight:700,cursor:"pointer",boxShadow:"0 4px 18px rgba(124,58,237,0.35)"}}>
+                Guardar registro
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* HISTORIAL */}
+        {tab==="historial" && (
+          <div className="fade">
+            <div style={{fontSize:11,color:"#5555AA",textTransform:"uppercase",letterSpacing:1.5,marginBottom:16}}>
+              Historial · {recs.length} registros
+            </div>
+            {recs.length===0 ? (
+              <div style={{textAlign:"center",padding:"50px 20px",color:"#4A4A7A"}}>
+                <div style={{fontSize:44,marginBottom:10}}>📋</div>
+                <p>Aun no hay registros</p>
+              </div>
+            ) : (
+              <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                {[...recs].reverse().map(r => {
+                  const s2 = getStatus(r.s, r.d);
+                  return (
+                    <div key={r.id} className="fade" style={{background:"#10102A",borderRadius:12,padding:"12px 14px",border:"1px solid #2A2A4A",display:"flex",alignItems:"center",gap:10}}>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:10,color:"#5A5A8A",marginBottom:4}}>{fmtFull(r.fecha)}</div>
+                        <div style={{display:"flex",alignItems:"baseline",gap:5}}>
+                          <span style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:"#FF9999"}}>{r.s}</span>
+                          <span style={{color:"#2A2A5A"}}>/</span>
+                          <span style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:"#99CCFF"}}>{r.d}</span>
+                          <span style={{fontSize:10,color:"#4A4A7A"}}>mmHg</span>
+                          <span style={{fontSize:13,color:"#82C91E",marginLeft:2}}>♥ {r.p}</span>
+                        </div>
+                      </div>
+                      <div style={{background:s2.color+"15",border:"1px solid "+s2.color+"44",borderRadius:7,padding:"3px 8px",fontSize:10,color:s2.color,fontWeight:700,whiteSpace:"nowrap"}}>
+                        {s2.label}
+                      </div>
+                      {del===r.id ? (
+                        <div style={{display:"flex",gap:4}}>
+                          <button onClick={()=>deleteRec(r.id)} style={{background:"rgba(255,107,107,0.15)",border:"1px solid #FF6B6B55",color:"#FF6B6B",borderRadius:7,padding:"5px 9px",fontSize:11,cursor:"pointer"}}>Si</button>
+                          <button onClick={()=>setDel(null)} style={{background:"#1A1A3E",border:"1px solid #2A2A4A",color:"#7777AA",borderRadius:7,padding:"5px 9px",fontSize:11,cursor:"pointer"}}>No</button>
+                        </div>
+                      ) : (
+                        <button onClick={()=>setDel(r.id)} style={{background:"none",border:"none",color:"#3A3A6A",fontSize:18,cursor:"pointer",padding:"4px 6px"}}>🗑</button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
+        )}
 
-          {/* ── CONTENIDO ── */}
-          <div style={{flex:1,padding:"20px 16px",overflowY:"auto"}}>
-
-            {/* GRÁFICA */}
-            {tab === "grafica" && (
-              <div className="fade-in">
-                {records.length < 2 ? (
-                  <div style={{textAlign:"center",padding:"60px 20px",color:"#5555AA"}}>
-                    <div style={{fontSize:52,marginBottom:16}}>📉</div>
-                    <p style={{fontSize:15,marginBottom:20,lineHeight:1.5}}>Añade al menos <strong style={{color:"#A78BFA"}}>2 registros</strong> para ver la gráfica</p>
-                    <button className="add-btn" onClick={()=>setTab("anadir")} style={{background:"rgba(167,139,250,0.12)",border:"1px solid #A78BFA",color:"#A78BFA",padding:"12px 24px",borderRadius:12,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:600}}>
-                      Añadir primer registro
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <div style={{fontSize:11,color:"#5555AA",textTransform:"uppercase",letterSpacing:1.5,marginBottom:14}}>Evolución temporal</div>
-                    <div style={{background:"#10102A",borderRadius:16,padding:"18px 6px 10px",border:"1px solid #2A2A4A",marginBottom:12}}>
-                      <ResponsiveContainer width="100%" height={270}>
-                        <ComposedChart data={chartData} margin={{top:5,right:12,left:-14,bottom:5}}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#2A2A4A" strokeOpacity={0.6} />
-                          <XAxis dataKey="name" tick={{fill:"#5555AA",fontSize:10,fontFamily:"DM Sans"}} axisLine={false} tickLine={false} />
-                          <YAxis domain={[40,180]} ticks={[60,80,90,100,120,130,140,160]} tick={{fill:"#5555AA",fontSize:10}} axisLine={false} tickLine={false} />
-                          <Tooltip content={<CustomTooltip />} />
-                          <Legend wrapperStyle={{fontSize:11,color:"#7777AA",paddingTop:8,fontFamily:"DM Sans"}} />
-                          <ReferenceLine y={140} stroke="#FF6B6B" strokeDasharray="5 4" strokeOpacity={0.45} strokeWidth={1.2} />
-                          <ReferenceLine y={90}  stroke="#FF6B6B" strokeDasharray="5 4" strokeOpacity={0.45} strokeWidth={1.2} />
-                          <ReferenceLine y={120} stroke="#51CF66" strokeDasharray="3 6" strokeOpacity={0.25} strokeWidth={1} />
-                          <ReferenceLine y={80}  stroke="#51CF66" strokeDasharray="3 6" strokeOpacity={0.25} strokeWidth={1} />
-                          <Line type="monotone" dataKey="Sistólica"  stroke="#FF9999" strokeWidth={2.2} dot={{fill:"#FF9999",r:4,strokeWidth:0}} activeDot={{r:6,strokeWidth:0}} />
-                          <Line type="monotone" dataKey="Diastólica" stroke="#99CCFF" strokeWidth={2.2} dot={{fill:"#99CCFF",r:4,strokeWidth:0}} activeDot={{r:6,strokeWidth:0}} />
-                          <Line type="monotone" dataKey="Pulso"      stroke="#82C91E" strokeWidth={1.5} strokeDasharray="5 3" dot={{fill:"#82C91E",r:3,strokeWidth:0}} activeDot={{r:5,strokeWidth:0}} />
-                        </ComposedChart>
-                      </ResponsiveContainer>
+        {/* STATS */}
+        {tab==="stats" && (
+          <div className="fade">
+            <div style={{fontSize:11,color:"#5555AA",textTransform:"uppercase",letterSpacing:1.5,marginBottom:16}}>
+              Resumen estadistico
+            </div>
+            {recs.length===0 ? (
+              <div style={{textAlign:"center",padding:"50px 20px",color:"#4A4A7A"}}>
+                <div style={{fontSize:44,marginBottom:10}}>📊</div>
+                <p>Sin datos suficientes</p>
+              </div>
+            ) : (
+              <>
+                {[
+                  {label:"Sistolica",  color:"#FF9999", icon:"▲", unit:"mmHg", k:"s"},
+                  {label:"Diastolica", color:"#99CCFF", icon:"▼", unit:"mmHg", k:"d"},
+                  {label:"Pulso",      color:"#82C91E", icon:"♥", unit:"ppm",  k:"p"}
+                ].map(({label,color,icon,unit,k}) => (
+                  <div key={k} style={{background:"#10102A",borderRadius:14,padding:16,border:"1px solid "+color+"22",marginBottom:12}}>
+                    <div style={{fontSize:13,color,fontWeight:700,marginBottom:12}}>
+                      {icon} {label} <span style={{color:"#4444AA",fontWeight:400,fontSize:11}}>({unit})</span>
                     </div>
-                    {/* Leyenda referencias */}
-                    <div style={{display:"flex",gap:14,flexWrap:"wrap",paddingLeft:4}}>
-                      {[["#FF6B6B","HTA (140/90)"],["#51CF66","Normal (120/80)"]].map(([c,l])=>(
-                        <div key={l} style={{display:"flex",alignItems:"center",gap:5,fontSize:10,color:"#5555AA"}}>
-                          <svg width="18" height="8"><line x1="0" y1="4" x2="18" y2="4" stroke={c} strokeWidth="1.5" strokeDasharray="4 3" strokeOpacity="0.7"/></svg>
-                          {l}
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
+                      {[["Media",avg(recs,k)],["Max.",mx(recs,k)],["Min.",mn(recs,k)]].map(([lbl,val]) => (
+                        <div key={lbl} style={{textAlign:"center",background:"#0D0D1A",borderRadius:10,padding:"10px 6px"}}>
+                          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color}}>{val}</div>
+                          <div style={{fontSize:10,color:"#5A5A8A",marginTop:3}}>{lbl}</div>
                         </div>
                       ))}
                     </div>
-                    <div style={{fontSize:10,color:"#3A3A6A",marginTop:10,textAlign:"center"}}>
-                      Periodo: {fmtShort(records[0].fecha)} — {fmtShort(records[records.length-1].fecha)}
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* AÑADIR */}
-            {tab === "anadir" && (
-              <div className="fade-in">
-                <div style={{fontSize:11,color:"#5555AA",textTransform:"uppercase",letterSpacing:1.5,marginBottom:18}}>Nuevo registro</div>
-                <div style={{background:"#10102A",borderRadius:16,padding:"20px 18px",border:"1px solid #2A2A4A"}}>
-
-                  {/* Fecha */}
-                  <div style={{marginBottom:20}}>
-                    <label style={{fontSize:11,color:"#7777AA",display:"block",marginBottom:7,letterSpacing:0.8}}>FECHA Y HORA</label>
-                    <input type="datetime-local" value={form.fecha}
-                      onChange={e=>setForm(f=>({...f,fecha:e.target.value}))}
-                      style={{width:"100%",background:"#1A1A38",border:"1px solid #3A3A6A",borderRadius:10,padding:"12px 14px",color:"#E8E8FF",fontSize:14,fontFamily:"'DM Sans',sans-serif",outline:"none"}} />
                   </div>
+                ))}
 
-                  {/* Valores */}
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:16}}>
-                    {[
-                      {k:"s",label:"Sistólica",  unit:"mmHg", color:"#FF9999", icon:"▲", ph:"120"},
-                      {k:"d",label:"Diastólica", unit:"mmHg", color:"#99CCFF", icon:"▼", ph:"80"},
-                      {k:"p",label:"Pulso",      unit:"ppm",  color:"#82C91E", icon:"♥", ph:"70"},
-                    ].map(({k,label,unit,color,icon,ph}) => (
-                      <div key={k}>
-                        <label style={{fontSize:10,color:"#5A5A8A",display:"block",textAlign:"center",marginBottom:6}}>
-                          <span style={{color}}>{icon}</span> {label}
-                        </label>
-                        <input type="number" inputMode="numeric" placeholder={ph} value={form[k]}
-                          onChange={e=>setForm(f=>({...f,[k]:e.target.value}))}
-                          style={{width:"100%",background:"#0D0D1A",border:`2px solid ${form[k]?color+"55":"#2A2A4A"}`,borderRadius:12,padding:"14px 6px",color,fontSize:24,textAlign:"center",fontFamily:"'DM Serif Display',serif",fontWeight:400,outline:"none",transition:"border-color 0.2s"}} />
-                        <p style={{fontSize:9,color:"#3A3A6A",textAlign:"center",margin:"5px 0 0"}}>{unit}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Preview estado */}
-                  {form.s && form.d && !isNaN(parseInt(form.s)) && !isNaN(parseInt(form.d)) && (() => {
-                    const st = getStatus(parseInt(form.s), parseInt(form.d));
+                <div style={{background:"#10102A",borderRadius:14,padding:16,border:"1px solid #2A2A4A"}}>
+                  <div style={{fontSize:12,color:"#8888AA",fontWeight:700,marginBottom:14}}>Distribucion de lecturas</div>
+                  {[
+                    {label:"Normal",       color:"#51CF66", fn:r=>r.s<120&&r.d<80},
+                    {label:"Normal-alta",  color:"#FFC048", fn:r=>r.s>=120&&r.s<130&&r.d<80},
+                    {label:"Elevada",      color:"#FF9F43", fn:r=>(r.s>=130||r.d>=80)&&r.s<140&&r.d<90},
+                    {label:"Hipertension", color:"#FF6B6B", fn:r=>r.s>=140||r.d>=90}
+                  ].map(({label,color,fn}) => {
+                    const count = recs.filter(fn).length;
+                    const pct = recs.length ? Math.round(count/recs.length*100) : 0;
                     return (
-                      <div style={{background:st.bg,border:`1px solid ${st.color}44`,borderRadius:8,padding:"8px 12px",marginBottom:14,textAlign:"center",fontSize:12,color:st.color}}>
-                        Estado estimado: <strong>{st.label}</strong>
+                      <div key={label} style={{marginBottom:10}}>
+                        <div style={{display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:4}}>
+                          <span style={{color}}>{label}</span>
+                          <span style={{color:"#5A5A8A"}}>{count} ({pct}%)</span>
+                        </div>
+                        <div style={{background:"#0D0D1A",borderRadius:4,height:7,overflow:"hidden"}}>
+                          <div style={{background:color,height:"100%",width:pct+"%",borderRadius:4,transition:"width .5s ease"}}/>
+                        </div>
                       </div>
                     );
-                  })()}
-
-                  {error && <p style={{color:"#FF6B6B",fontSize:12,textAlign:"center",marginBottom:12}}>{error}</p>}
-
-                  <button className="add-btn" onClick={handleAdd} style={{
-                    width:"100%",padding:16,background:"linear-gradient(135deg,#7C3AED,#A78BFA)",
-                    border:"none",borderRadius:13,color:"#fff",fontSize:15,fontFamily:"'DM Sans',sans-serif",
-                    fontWeight:700,cursor:"pointer",boxShadow:"0 4px 20px rgba(124,58,237,0.35)",letterSpacing:0.3
-                  }}>
-                    Guardar registro
-                  </button>
+                  })}
                 </div>
-              </div>
+              </>
             )}
-
-            {/* HISTORIAL */}
-            {tab === "historial" && (
-              <div className="fade-in">
-                <div style={{fontSize:11,color:"#5555AA",textTransform:"uppercase",letterSpacing:1.5,marginBottom:16}}>
-                  Historial · {records.length} registros
-                </div>
-                {records.length === 0 ? (
-                  <div style={{textAlign:"center",padding:"50px 20px",color:"#5555AA"}}>
-                    <div style={{fontSize:44,marginBottom:12}}>📋</div>
-                    <p>Aún no hay registros</p>
-                  </div>
-                ) : (
-                  <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                    {[...records].reverse().map(r => {
-                      const st = getStatus(r.s, r.d);
-                      return (
-                        <div key={r.id} style={{background:"#10102A",borderRadius:12,padding:"12px 14px",border:"1px solid #2A2A4A",display:"flex",alignItems:"center",gap:10}} className="fade-in">
-                          <div style={{flex:1}}>
-                            <div style={{fontSize:10,color:"#5A5A8A",marginBottom:5}}>{fmtDate(r.fecha)}</div>
-                            <div style={{display:"flex",alignItems:"baseline",gap:6}}>
-                              <span style={{color:"#FF9999",fontWeight:700,fontSize:20,fontFamily:"'DM Serif Display',serif"}}>{r.s}</span>
-                              <span style={{color:"#2A2A5A",fontSize:16}}>/</span>
-                              <span style={{color:"#99CCFF",fontWeight:700,fontSize:20,fontFamily:"'DM Serif Display',serif"}}>{r.d}</span>
-                              <span style={{color:"#4A4A7A",fontSize:11}}>mmHg</span>
-                              <span style={{color:"#82C91E",fontSize:13,marginLeft:2}}>♥ {r.p}</span>
-                            </div>
-                          </div>
-                          <div style={{background:`${st.color}15`,border:`1px solid ${st.color}44`,borderRadius:7,padding:"3px 8px",fontSize:10,color:st.color,fontWeight:700,whiteSpace:"nowrap"}}>
-                            {st.label}
-                          </div>
-                          {delConfirm === r.id ? (
-                            <div style={{display:"flex",gap:4}}>
-                              <button className="delete-btn" onClick={()=>handleDelete(r.id)} style={{background:"rgba(255,107,107,0.15)",border:"1px solid #FF6B6B55",color:"#FF6B6B",borderRadius:7,padding:"5px 9px",fontSize:11,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>Sí</button>
-                              <button className="delete-btn" onClick={()=>setDelConfirm(null)} style={{background:"#1A1A3E",border:"1px solid #2A2A4A",color:"#7777AA",borderRadius:7,padding:"5px 9px",fontSize:11,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>No</button>
-                            </div>
-                          ) : (
-                            <button className="delete-btn" onClick={()=>setDelConfirm(r.id)} style={{background:"none",border:"none",color:"#3A3A6A",fontSize:18,cursor:"pointer",padding:"4px 6px",lineHeight:1}}>🗑</button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ESTADÍSTICAS */}
-            {tab === "stats" && (
-              <div className="fade-in">
-                <div style={{fontSize:11,color:"#5555AA",textTransform:"uppercase",letterSpacing:1.5,marginBottom:16}}>Resumen estadístico</div>
-                {records.length === 0 ? (
-                  <div style={{textAlign:"center",padding:"50px 20px",color:"#5555AA"}}>
-                    <div style={{fontSize:44,marginBottom:12}}>📊</div>
-                    <p>Sin datos suficientes</p>
-                  </div>
-                ) : (
-                  <>
-                    <StatCard label="Sistólica"  color="#FF9999" emoji="▲" unit="mmHg" data={records} k="s" />
-                    <StatCard label="Diastólica" color="#99CCFF" emoji="▼" unit="mmHg" data={records} k="d" />
-                    <StatCard label="Pulso"      color="#82C91E" emoji="♥" unit="ppm"  data={records} k="p" />
-
-                    {/* Distribución */}
-                    <div style={{background:"#10102A",borderRadius:14,padding:16,border:"1px solid #2A2A4A"}}>
-                      <div style={{fontSize:12,color:"#8888AA",fontWeight:700,marginBottom:14}}>Distribución de lecturas</div>
-                      {[
-                        {label:"Normal",      color:"#51CF66", fn: r=>r.s<120&&r.d<80},
-                        {label:"Normal-alta", color:"#FFC048", fn: r=>r.s>=120&&r.s<130&&r.d<80},
-                        {label:"Elevada",     color:"#FF9F43", fn: r=>(r.s>=130||r.d>=80)&&r.s<140&&r.d<90},
-                        {label:"Hipertensión",color:"#FF6B6B", fn: r=>r.s>=140||r.d>=90},
-                      ].map(({label,color,fn}) => {
-                        const count = records.filter(fn).length;
-                        const pct   = records.length ? Math.round(count/records.length*100) : 0;
-                        return (
-                          <div key={label} style={{marginBottom:10}}>
-                            <div style={{display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:5}}>
-                              <span style={{color}}>{label}</span>
-                              <span style={{color:"#5A5A8A"}}>{count} lectura{count!==1?"s":""} ({pct}%)</span>
-                            </div>
-                            <div style={{background:"#0D0D1A",borderRadius:5,height:7,overflow:"hidden"}}>
-                              <div style={{background:color,height:"100%",width:`${pct}%`,borderRadius:5,transition:"width 0.6s ease"}} />
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {records.length >= 2 && (
-                      <div style={{fontSize:10,color:"#3A3A6A",textAlign:"center",padding:"10px 0 0"}}>
-                        Periodo: {fmtShort(records[0].fecha)} — {fmtShort(records[records.length-1].fecha)}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-
           </div>
+        )}
+      </div>
 
-          {/* ── BARRA DE NAVEGACIÓN INFERIOR ── */}
-          <div style={{background:"#0D0D1A",borderTop:"1px solid #1E1E3A",display:"flex",position:"sticky",bottom:0,zIndex:200,paddingBottom:"env(safe-area-inset-bottom)"}}>
-            {tabs.map(({id,icon,label}) => (
-              <button key={id} className="tab-btn" onClick={()=>setTab(id)} style={{
-                flex:1,padding:"12px 4px",border:"none",background:"none",
-                color: tab===id ? "#A78BFA" : "#4A4A7A",
-                fontSize:10,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",
-                display:"flex",flexDirection:"column",alignItems:"center",gap:3,
-                borderTop: tab===id ? "2px solid #A78BFA" : "2px solid transparent",
-                fontWeight: tab===id ? 700 : 400,
-              }}>
-                <span style={{fontSize:18,lineHeight:1}}>{icon}</span>
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-      );
-    }
+      {/* ── NAVEGACION ── */}
+      <div style={{background:"#0A0A18",borderTop:"1px solid #1A1A2E",display:"flex",position:"sticky",bottom:0,zIndex:200,paddingBottom:"env(safe-area-inset-bottom)"}}>
+        {TABS.map(([id,icon,label]) => (
+          <button key={id} onClick={()=>setTab(id)} style={{
+            flex:1, padding:"11px 4px", border:"none", background:"none",
+            color: tab===id ? "#A78BFA" : "#3A3A6A",
+            fontSize:10, cursor:"pointer", display:"flex", flexDirection:"column",
+            alignItems:"center", gap:3,
+            borderTop: tab===id ? "2px solid #A78BFA" : "2px solid transparent",
+            fontWeight: tab===id ? 700 : 400,
+            transition:"all .15s"
+          }}>
+            <span style={{fontSize:18,lineHeight:1}}>{icon}</span>
+            {label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
-    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-  </script>
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
 </body>
 </html>
